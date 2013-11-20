@@ -26,52 +26,59 @@ sub load {
 }
 
 sub add_dict {
-	my ($self, $dict) = @_;
-	my $fh;
-	if($dict =~ /.*\.bz2$/) {
-		open $fh, "bzcat $dict |" or die "Opening $dict: $!";
-	} else {
-		open $fh, "<", $dict or die "Opening $dict: $!";
-	}
+	my ($self, @dicts) = @_;
 
-	while(<$fh>) {
-		chomp;
-		$self->add_word($_);
+	for my $dict (@dicts) {
+		my $fh;
+		if($dict =~ /.*\.bz2$/) {
+			open $fh, "bzcat $dict |" or die "Opening $dict: $!";
+		} else {
+			open $fh, "<", $dict or die "Opening $dict: $!";
+		}
+	
+		while(<$fh>) {
+			chomp;
+			$self->add_word($_);
+		}
+		close $fh;
 	}
-	close $fh;
 }
 
 sub add_word {
-	my ($self, $word) = @_;
+	my ($self, @words) = @_;
 
-	my $dic = $self->{dic};
-	for my $letter (split //, $word) {
-		$dic->{$letter} = {} unless exists $dic->{$letter};
-		$dic = $dic->{$letter};
+	for my $word (@words) {
+		my $dic = $self->{dic};
+		for my $letter (split //, $word) {
+			$dic->{$letter} = {} unless exists $dic->{$letter};
+			$dic = $dic->{$letter};
+		}
+		$dic->{'##'} = 1;
 	}
-	$dic->{'##'} = 1;
 }
 
 sub rem_word {
-	my ($self, $word) = @_;
+	my ($self, @words) = @_;
 
-	my $dic = $self->{dic};
-	my @st;
-	my $letter;
-
-	for $letter (split //, $word) {
-		return unless exists $dic->{$letter};
-		$dic = $dic->{$letter};
-		push @st, [$letter, $dic];
-	}
-
-	return unless exists $dic->{'##'};
-
-	delete $dic->{'##'};
-
-	while(%$dic) {
-		my ($letter, $dic) = @{pop @st};
-		delete $dic->{$letter};
+	WORD: for my $word (@words) {
+		my $dic = $self->{dic};
+		my @st;
+		my $letter;
+	
+		for $letter (split //, $word) {
+			next WORD unless exists $dic->{$letter};
+			push @st, [$letter, $dic];
+			$dic = $dic->{$letter};
+		}
+	
+		next WORD unless exists $dic->{'##'};
+	
+		delete $dic->{'##'};
+	
+		while(!%$dic) {
+			($letter, $dic) = @{pop @st};
+			delete $dic->{$letter};
+		}
 	}
 }
 

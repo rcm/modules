@@ -9,11 +9,11 @@ my $dic = PrefixTree->new();
 
 my @palavras = qw{ aba abaco abeto abrir aberto abertura aparecer aparece aparecida apurar apurado adesao aderir };
 
-$dic->add_word($_) for (@palavras);
+$dic->add_word(@palavras);
 
 my @remover = qw{ abaco abertura abertos aparecer apareces aparec apurado };
 
-$dic->rem_word($_) for(@remover);
+$dic->rem_word(@remover);
 
 my %tests = (
 	'ab' => [qw{aba abeto abrir aberto}],
