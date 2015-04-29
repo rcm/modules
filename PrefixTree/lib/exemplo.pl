@@ -1,4 +1,4 @@
-use Data::Dumper;
+use YAML;
 use PrefixTree;
 
 my $pt;
@@ -19,7 +19,7 @@ $pt->rem_word(abet);
 $pt->rem_word(aperta);
 
 
-print Dumper($pt);
+print Dump($pt);
 
 printf("%s: %s\n", $_, join(" ", $pt->get_words_with_prefix($_))) for (qw {ab ap});
 
